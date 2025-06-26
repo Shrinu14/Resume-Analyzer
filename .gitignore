@@ -1,0 +1,8 @@
+# examples—adjust for your stack
+__pycache__/
+*.pyc
+*.log
+.env
+.venv/
+node_modules/
+.idea/ .vscode/
