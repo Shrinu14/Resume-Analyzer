@@ -16,7 +16,7 @@ WORKDIR /app
 
 # ---- OS packages (Java + OCR deps) ----
 RUN apt-get update && apt-get install -y \
-    openjdk-17-jre \
+    default-jre-headless \
     tesseract-ocr \
     poppler-utils \
     libgl1 \
