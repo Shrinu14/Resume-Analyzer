@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, UploadFile, Form, File
 from fastapi.middleware.cors import CORSMiddleware
 from tempfile import NamedTemporaryFile
@@ -19,6 +20,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/ping")
+async def ping():
+    """Health check endpoint (referenced in the README, previously missing)."""
+    return {"status": "ok"}
+
+
 @app.post("/analyze/")
 async def analyze_resume(file: UploadFile = File(...), jd_text: str = Form(...)):
     """
@@ -26,9 +34,16 @@ async def analyze_resume(file: UploadFile = File(...), jd_text: str = Form(...))
     """
     file_type = infer_file_type(file.filename)
 
-    with NamedTemporaryFile(delete=False, suffix=f".{file_type}") as tmp:
-        tmp.write(await file.read())
-        tmp_path = tmp.name
+    tmp_path = None
+    try:
+        with NamedTemporaryFile(delete=False, suffix=f".{file_type}") as tmp:
+            tmp.write(await file.read())
+            tmp_path = tmp.name
 
-    result = analyze_resume_pipeline(tmp_path, file_type, jd_text)
-    return result
+        result = analyze_resume_pipeline(tmp_path, file_type, jd_text)
+        return result
+    finally:
+        # Previously the temp file was never removed, leaking a file per
+        # request. Clean it up regardless of success/failure.
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)

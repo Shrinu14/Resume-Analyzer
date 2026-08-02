@@ -14,7 +14,10 @@ def extract_skills(text: str) -> List[str]:
     # Phrase matcher for known skill keywords
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     patterns = [nlp(skill) for skill in SKILL_KEYWORDS]
-    matcher.add("SKILLS", None, *patterns)
+    # spaCy 3.x API: PhraseMatcher.add(key, patterns, *, on_match=None).
+    # The old v2-style call `matcher.add("SKILLS", None, *patterns)` raises a
+    # TypeError on spaCy 3.x and broke every /analyze/ request.
+    matcher.add("SKILLS", patterns)
 
     matches = matcher(doc)
     skills = set([doc[start:end].text for _, start, end in matches])

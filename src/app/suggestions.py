@@ -1,17 +1,11 @@
 # app/suggestions.py
-
-from langchain_ollama import OllamaLLM
-
-llm = OllamaLLM(model="llama3.1", base_url="http://host.docker.internal:11434")
+#
+# NOTE: kept for backwards compatibility / potential future use; the main
+# pipeline uses chat_feedback.get_resume_feedback(). Uses the same
+# non-crashing pattern as chat_feedback.py so an unreachable LLM backend
+# doesn't raise if this ever gets wired in.
+from src.app.chat_feedback import get_resume_feedback, FALLBACK_MESSAGE  # noqa: F401
 
 
 def get_resume_improvement_tips(resume_text: str) -> str:
-    prompt = f"""
-You are an expert resume reviewer.
-
-Analyze the following resume and give exactly 3 specific suggestions to improve it. Focus on tone, formatting, and content.
-
-Resume:
-{resume_text}
-"""
-    return llm.invoke(prompt)
+    return get_resume_feedback(resume_text)
